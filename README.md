@@ -207,6 +207,7 @@ http://localhost:8080
 ├── scripts/
 │   └── init_operaciones.sql
 ├── docker-compose.yml
+├── docs
 └── README.md
 ```
 
