@@ -207,7 +207,7 @@ http://localhost:8080
 ## 👨‍💻 Autor
 
 Lucas Luiselli
-Senior Business Intelligence Analyst
+Business Intelligence Analyst
 
 ---
 
