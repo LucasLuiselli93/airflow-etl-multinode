@@ -4,3 +4,6 @@ azure-storage-blob
 psycopg2-binary
 apache-airflow-providers-postgres
 apache-airflow-providers-microsoft-azure
+polars
+adbc-driver-postgresql  # Driver de alto rendimiento para Polars
+pyarrow
