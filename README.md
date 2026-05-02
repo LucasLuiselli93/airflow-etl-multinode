@@ -12,6 +12,14 @@ El sistema procesa grandes volúmenes de datos (≈1.5M registros diarios), real
 
 ---
 
+## 📊 Ejecución del DAG
+
+A continuación se muestra la ejecución del pipeline en Apache Airflow, evidenciando la extracción paralela por país y la consolidación final:
+
+![DAG Airflow](docs/images/dag_airflow.png)
+
+---
+
 ## 🏗️ Arquitectura del Sistema
 
 * **Fuentes**: 3 bases PostgreSQL independientes (AR, BR, CL)
@@ -103,7 +111,7 @@ http://localhost:8080
 
 ---
 
-## 🧪 Troubleshooting
+## 🧪 Problemas
 
 ### ❌ Error: UndefinedTable
 
