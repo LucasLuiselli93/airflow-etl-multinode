@@ -16,7 +16,7 @@ El sistema procesa grandes volúmenes de datos (≈1.5M registros diarios), real
 
 A continuación se muestra la ejecución del pipeline en Apache Airflow, evidenciando la extracción paralela por país y la consolidación final:
 
-![DAG Airflow](docs/images/dag_airflow.png)
+![DAG Airflow](docs/dag_airflow.png)
 
 ---
 
