@@ -1,0 +1,13 @@
+# Bases de datos (NUNCA SUBIR ESTO)
+data/
+
+# Logs y temporales de Airflow
+logs/
+
+# Entorno y credenciales
+.env
+__pycache__/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db

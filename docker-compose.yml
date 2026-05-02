@@ -1,0 +1,137 @@
+version: '3.8'
+
+# ============================================================
+# CONFIGURACIÓN BASE REUTILIZABLE (ANCHOR)
+# ============================================================
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.7.1-python3.10
+  
+  # Variables de entorno comunes para Airflow
+  environment:
+    # Tipo de executor (paralelismo local)
+    - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    
+    # Conexión a la DB metadata de Airflow
+    - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
+    
+    # Clave para encriptación de variables/conexiones
+    - AIRFLOW__CORE__FERNET_KEY=''
+    
+    # No cargar DAGs de ejemplo
+    - AIRFLOW__CORE__LOAD_EXAMPLES=False
+
+  # Montaje de volúmenes locales → contenedor
+  volumes:
+    - ./dags:/opt/airflow/dags        # DAGs
+    - ./logs:/opt/airflow/logs        # Logs (útil para debugging)
+    - ./plugins:/opt/airflow/plugins  # Plugins personalizados
+    - ./requirements.txt:/requirements.txt  # Dependencias Python
+
+  # Usuario dentro del contenedor (evita problemas de permisos)
+  user: "${AIRFLOW_UID:-5000}:0"
+
+  # Dependencia del servicio de metadata DB
+  depends_on:
+    postgres-airflow:
+      condition: service_healthy
+
+
+# ============================================================
+# SERVICIOS
+# ============================================================
+services:
+
+  # ----------------------------------------------------------
+  # Base de datos de metadata de Airflow
+  # ----------------------------------------------------------
+  postgres-airflow:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+
+    # Healthcheck para asegurar disponibilidad antes de Airflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  # ----------------------------------------------------------
+  # Servicio principal de Airflow
+  # (Webserver + Scheduler en un solo contenedor)
+  # ----------------------------------------------------------
+  airflow:
+    <<: *airflow-common
+
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
+      
+      # Nueva convención (Airflow 2.7+)
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
+      
+      # Clave de encriptación (IMPORTANTE en prod)
+      - AIRFLOW__CORE__FERNET_KEY=46WBy97L066_398DC9_t6N-S8WJ-pI4n460r2_cT3C0=
+      
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+
+    # Comando de inicialización + ejecución
+    command: >
+      bash -c "
+      pip install -r /requirements.txt &&
+      airflow db migrate &&
+      (airflow users create 
+        --username admin 
+        --firstname Lucas 
+        --lastname Data 
+        --role Admin 
+        --email admin@example.com 
+        --password admin || true) &&
+      (airflow scheduler & airflow webserver --port 8080)
+      "
+
+    # Exposición del puerto del webserver
+    ports:
+      - "8080:8080"
+
+
+  # ----------------------------------------------------------
+  # NODOS DE ORIGEN (simulan países)
+  # Cada uno es una base Postgres independiente
+  # ----------------------------------------------------------
+
+  node_ar:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=user_ar
+      - POSTGRES_PASSWORD=pass_ar
+      - POSTGRES_DB=db_ar
+    volumes:
+      - ./data/ar:/var/lib/postgresql/data # <--- Agrega esto
+    ports:
+      - "5433:5432"
+
+  node_br:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=user_br
+      - POSTGRES_PASSWORD=pass_br
+      - POSTGRES_DB=db_br
+    volumes:
+      - ./data/br:/var/lib/postgresql/data # <--- Agrega esto
+    ports:
+      - "5434:5432"
+
+  node_cl:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=user_cl
+      - POSTGRES_PASSWORD=pass_cl
+      - POSTGRES_DB=db_cl
+    volumes:
+      - ./data/cl:/var/lib/postgresql/data # <--- Agrega esto
+    ports:
+      - "5435:5432"

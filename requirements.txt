@@ -1,0 +1,6 @@
+pandas
+pyarrow
+azure-storage-blob
+psycopg2-binary
+apache-airflow-providers-postgres
+apache-airflow-providers-microsoft-azure
